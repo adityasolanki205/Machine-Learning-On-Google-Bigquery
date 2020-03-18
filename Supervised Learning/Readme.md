@@ -40,13 +40,3 @@
     5. Titanic Dataset Bigquery.html
     
     6. All Supporting images
-
-
-```python
-
-```
-
-
-```python
-
-```
