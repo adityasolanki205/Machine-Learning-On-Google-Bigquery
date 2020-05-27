@@ -30,31 +30,68 @@ For the last one year, I have been part of a great learning curve wherein I have
 
 Below are the steps to setup the enviroment and run the codes:
 
-1. **Data Exploration**: First the data exploration has to be done. Download the dataset from [Titanic dataset](https://www.kaggle.com/c/titanic). Steps to upload the data are given below.
+1. **Data Exploration**: First the data exploration has to be done. Download the dataset from [Titanic dataset](https://www.kaggle.com/c/titanic). Steps to upload the data and its exploration are given below.
     
     a. Create a Google Cloud Bucket.
     
     b. Upload the Train and test CSV files in that Bucket
     
-    c.
-
-2. **Data Wrangling**: Now we need to detect a face in the dataset. To do that we will use [Multi-Task Cascaded Convolutional Neural Network](https://arxiv.org/abs/1604.02878) (MTCNN). This process will provide the co-ordinates of pixels to identify the face in the photo. Same process can be done to fetch more than one face from a photo with multiple people. 
-
-```python
-    # All the codes are written in Jupyter Notebooks
-
-    # Install MTCNN
-    !pip install mtcnn
+    c. Goto the Bisquery using the Navigation Menu on the Top Left
     
-    # To Preprocess the image install PIL 
-    !pip install PIL
+    d. Create a Dataset 
     
-    # Preprocess the image into 'RGB' and convert it into numpy array
-    image = np.asarray(image.convert('RGB'))
+    e. Create a table using Google Cloud Storage and auto detecting the Schema
     
-    # Use MTCNN object to detect faces using detect_faces() method
-    faces = MTCNN.detect_faces(image)
+    f. Select the correct Csv file
+    
+    g. Use Simple SQL queries, try to find important points and relevant data in the dataset. 
+       It will be used while data wrangling. For eg. 
+       
+```sql
+    # Here we are selecting Survived Passengers grouped by their sex
+    Select 
+        Sex , 
+        Survived,
+        count(*)
+    FROM `daring-span-249015.titanic_dataset.Train`
+    Group by  
+        Survived , 
+        Sex
+    order by 
+        1 , 
+        2;
 ```
+![](Images/Sex_Survived.PNG)
+
+2. **Data Wrangling**: After exploration we will try to clean, structure and enrich the data so that it can be make more sense to the Algorithm.
+
+
+```sql
+    # Here We are trying to select passengers according to their age group. 
+    select 
+        case
+            when age <18 then 'Under 18'
+            when age between 18 and 24 then '18-24'
+            when age between 25 and 34 then '25-34'
+            when age > 34 then '35 above'
+        END as age_range, 
+        Count(*) as count
+    from `daring-span-249015.titanic_dataset.Train`
+    group by age_range
+    order by age_range;
+```
+![](Images/Age.PNG)
+
+```sql
+    # So we will update the null Values with Mean of the complete column
+    Update `daring-span-249015.titanic_dataset.Train`
+    set age = (SELECT avg(age)
+                from `daring-span-249015.titanic_dataset.Train`
+                where age IS NOT NULL
+                )
+    where age IS NULL;
+```
+![](Images/age_updated.PNG)
 
 3. **Model Creation**: After face extraction we will fetch the face embedding using [FaceNet](https://github.com/davidsandberg/facenet). Downloaded the model [here](https://drive.google.com/drive/folders/1pwQ3H4aJ8a6yyJHZkTwtjcL4wYWQb7bn). After running this code for all the faces in train and test folders, we can save the embeddings using [np.saves_compressed](https://numpy.org/doc/stable/reference/generated/numpy.savez_compressed.html)
 
