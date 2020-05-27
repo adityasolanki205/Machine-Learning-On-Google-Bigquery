@@ -93,7 +93,7 @@ Below are the steps to setup the enviroment and run the codes:
 ```
 ![](Images/age_updated.png)
 
-3. **Model Creation**: After data wrangling we will try to create a Supervised [Logistic Regresion model](https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create#model_type).  
+3. **Model Creation**: After data wrangling we will try to create a Supervised [Logistic Regression model](https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create#model_type).  
 
 ```sql
     # This query below will create a logistic regression model for our input data
