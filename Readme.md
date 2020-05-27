@@ -61,7 +61,7 @@ Below are the steps to setup the enviroment and run the codes:
         1 , 
         2;
 ```
-![](Images/Sex_Survived.PNG)
+![](Images/Sex_Survived.png)
 
 2. **Data Wrangling**: After exploration we will try to clean, structure and enrich the data so that it can be make more sense to the Algorithm.
 
@@ -80,7 +80,7 @@ Below are the steps to setup the enviroment and run the codes:
     group by age_range
     order by age_range;
 ```
-![](Images/Age.PNG)
+![](Images/Age.png)
 
 ```sql
     # So we will update the null Values with Mean of the complete column
@@ -91,84 +91,127 @@ Below are the steps to setup the enviroment and run the codes:
                 )
     where age IS NULL;
 ```
-![](Images/age_updated.PNG)
+![](Images/age_updated.png)
 
-3. **Model Creation**: After face extraction we will fetch the face embedding using [FaceNet](https://github.com/davidsandberg/facenet). Downloaded the model [here](https://drive.google.com/drive/folders/1pwQ3H4aJ8a6yyJHZkTwtjcL4wYWQb7bn). After running this code for all the faces in train and test folders, we can save the embeddings using [np.saves_compressed](https://numpy.org/doc/stable/reference/generated/numpy.savez_compressed.html)
+3. **Model Creation**: After data wrangling we will try to create a Supervised [Logistic Regresion model](https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create#model_type).  
 
-```python
-    # The Dimension of the input has to be increased as the model expects input in the form (Sample size, 160, 160,3)
-    samples = np.expand_dims(image_pixels, axis = 0)
+```sql
+    # This query below will create a logistic regression model for our input data
     
-    # Use the Predict method to find the Embeddings in the face. Output would be 1D vector of 128 embeddings of that face
-    embeddings = model.predict(samples)
+    CREATE OR REPLACE MODEL `daring-span-249015.titanic_dataset.classification_model`
+    OPTIONS
+    (
+    model_type='logistic_reg',
+    input_label_cols=['Survived']
+    )
+    AS
+        select
+            Sex ,
+            Pclass,
+            case
+                when age between 0 and 18   then 1
+                when age between 18 and 24  then 2
+                when age > 24 and age <= 34 then 3
+                when age > 34               then 4
+            END as age_range,
+            case
+                when Embarked ='C' then 1
+                when Embarked ='Q'  then 2
+                when Embarked ='S' then 3
+                when Embarked IS NULL then 4
+            END AS point_of_embarkment,
+            SibSp,
+            Parch,
+            Survived
+        from `daring-span-249015.titanic_dataset.Train`
+        group by 
+                Pclass,
+                Sex ,
+                Embarked, 
+                age_range, 
+                SibSp, 
+                parch, 
+                Survived;
 ```
 
-4. **Model Evaluation**:  Now we will train SVM model over the embeddings to predict the face of a person.
+4. **Model Evaluation**:  After model creation we will evaluate it on the input data.
 
-```python
-    # We will use Linear SVM model to train over the embeddings
-    model = SVC(kernel = 'linear', probability=True).fit(X_train,y_train)
+```sql
+    # Here we will use the ML.EVALUATE object to measure our model
+    
+    SELECT * FROM
+    ML.EVALUATE 
+     (MODEL `daring-span-249015.titanic_dataset.classification_model`, 
+     (select
+        Sex ,
+        Pclass,
+        case
+         when age between 0 and 18   then 1
+         when age between 18 and 24  then 2
+         when age > 24 and age <= 34 then 3
+         when age > 34               then 4
+        END as age_range,
+        case
+         when Embarked ='C' then 1
+         when Embarked ='Q'  then 2
+         when Embarked ='S' then 3
+         when Embarked IS NULL then 4
+        END AS point_of_embarkment,
+        SibSp,
+        Parch,
+        Survived
+       from `daring-span-249015.titanic_dataset.Train`
+       group by 
+          Pclass,
+          Sex ,
+          Embarked, 
+          age_range, 
+          SibSp, 
+          parch, 
+          Survived)
+     );
 ```
+![](Images/ML_evaluate.png)
 
-5. **Model Implementation**: After the training of SVM model we will predict the face over test dataset.
+5. **Model Implementation**: Atlast we will use the model to predict the values over our testing dataset.
 
-```python
-    # Preprocessing of the test photos have to be done like we did for Train and Validation photos
-    image = np.asarray(image.convert('RGB'))
+```sql
+    # To predict we will use the ML.PREDICT object
     
-    # Now extract the face
-    faces = MTCNN.detect_faces(image)
-    
-    # Extract embeddings
-    embeddings = model.predict(samples)
-    
-    # At last we will predict the face embeddings
-    SVM_model.predict(X_test)
+    SELECT * FROM
+    ML.PREDICT(MODEL `daring-span-249015.titanic_dataset.classification_model`, 
+    (select
+        Sex ,
+        Pclass ,
+        case
+             when age between 0 and 18   then 1
+             when age between 18 and 24  then 2
+             when age > 24 and age <= 34 then 3
+             when age > 34               then 4
+        END as age_range,
+        case
+             when Embarked ='C' then 1
+             when Embarked ='Q'  then 2
+             when Embarked ='S' then 3
+             when Embarked IS NULL then 4
+        END AS point_of_embarkment,
+        SibSp,
+        Parch
+       from `daring-span-249015.titanic_dataset.Test`
+       group by 
+        Pclass,
+        Sex ,
+        Embarked, 
+        age_range, 
+        SibSp, 
+        parch)
+    )
 ```
-
-## Tests
-To test the code we need to do the following:
-
-    1. Copy the photo to be tested in 'Test' subfolder of 'Data' folder. 
-    Here I have used a photo of Elton John and Madonna
-![](data/test/singers.jpg)
-    
-    2. Goto the 'Predict face in a group' folder.
-    
-    3. Open the 'Predict from a group of faces.ipynb'
-    
-    4. Goto filename variable and provide the path to your photo. Atlast run the complete code. 
-    The recognised faces would have been highlighted and a photo would be saved by the name 'Highlighted.jpg'
-![](output.jpg)
-
-**Note**: The boundary boxes are color coded:
-
-    1. Aditya Solanki  : Yellow
-    2. Ben Afflek      : Blue   
-    3. Elton John      : Green
-    4. Jerry Seinfield : Red
-    5. Madonna         : Aqua
-    6. Mindy Kaling    : White
+[](Images/predict.png)
     
 ## How to use?
-To run the complete code, follow the process below:
-
-    1. Create Data Folder. 
-    
-    2. Create Sub folders as Training and Validation Dataset
-    
-    3. Create all the celebrity folders with all the required photos in them. 
-    
-    4. Run the Train and Test Data.ipynb file under Training Data Creation folder
-    
-    5. Save the output as numpy arrays
-    
-    6. Run the Face embedding using FaceNet.ipynb under the same folder name. This will create training data for SVM model
-    
-    7. Run the Predict from a group of faces.ipynb to recognise a familiar face
+To run this machine learning model, you will have to run all the SQL queries present [here](https://github.com/adityasolanki205/Machine-Learning-On-Google-Bigquery/blob/master/Supervised%20Learning/Titanic%20Dataset%20Bigquery.ipynb). This model has an accuracy of a little over 70 percent. 
 
 ## Credits
-1. David Sandberg's facenet repo: [https://github.com/davidsandberg/facenet](https://github.com/davidsandberg/facenet)
-2. Tim Esler's Git repo:[https://github.com/timesler/facenet-pytorch](https://github.com/timesler/facenet-pytorch)
-3. Akash Nimare's README.md: https://gist.github.com/akashnimare/7b065c12d9750578de8e705fb4771d2f#file-readme-md
-4. [Machine learning mastery](https://machinelearningmastery.com/how-to-develop-a-face-recognition-system-using-facenet-in-keras-and-an-svm-classifier/)
+1. [Google Bigquery Documentation](https://cloud.google.com/bigquery/docs)
+2. [Codelabs](https://codelabs.developers.google.com/codelabs/end-to-end-ml/index.html?index=..%2F..index#1)
