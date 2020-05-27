@@ -36,7 +36,7 @@ Below are the steps to setup the enviroment and run the codes:
     
     b. Upload the Train and test CSV files to that Bucket
     
-    c. Goto the Bisquery using the Navigation Menu on the Top Left
+    c. Goto the Bigquery using the Navigation Menu on the Top Left
     
     d. Create a Dataset 
     
