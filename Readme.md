@@ -44,7 +44,7 @@ Below are the steps to setup the enviroment and run the codes:
     
     f. Select the correct Csv file
     
-    g. Use Simple SQL queries, try to find important points and relevant data in the dataset. 
+    g. Use Simple SQL queries to find important points and relevant data in the dataset. 
        It will be used while data wrangling. For eg. 
        
 ```sql
