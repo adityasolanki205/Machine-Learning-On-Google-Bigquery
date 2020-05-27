@@ -33,7 +33,9 @@ Below are the steps to setup the enviroment and run the codes:
 1. **Data Exploration**: First the data exploration has to be done. Download the dataset from [Titanic dataset](https://www.kaggle.com/c/titanic). Steps to upload the data are given below.
     
     a. Create a Google Cloud Bucket.
+    
     b. Upload the Train and test CSV files in that Bucket
+    
     c.
 
 2. **Data Wrangling**: Now we need to detect a face in the dataset. To do that we will use [Multi-Task Cascaded Convolutional Neural Network](https://arxiv.org/abs/1604.02878) (MTCNN). This process will provide the co-ordinates of pixels to identify the face in the photo. Same process can be done to fetch more than one face from a photo with multiple people. 
