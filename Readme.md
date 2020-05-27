@@ -23,7 +23,9 @@ For the last one year, I have been part of a great learning curve wherein I have
 
 ## Code Example
 
-```bash
+```sql
+    SELECT *
+    FROM SOMETHING
     # clone this repo, removing the '-' to allow python imports:
     git clone https://github.com/adityasolanki205/Face-Recognition.git
 ```
