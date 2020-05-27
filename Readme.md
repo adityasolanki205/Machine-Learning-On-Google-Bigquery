@@ -34,7 +34,7 @@ Below are the steps to setup the enviroment and run the codes:
     
     a. Create a Google Cloud Bucket.
     
-    b. Upload the Train and test CSV files in that Bucket
+    b. Upload the Train and test CSV files to that Bucket
     
     c. Goto the Bisquery using the Navigation Menu on the Top Left
     
