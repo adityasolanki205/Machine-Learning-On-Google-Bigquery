@@ -13,30 +13,30 @@ This is a Machine Learning model using GCP's [Bigquery](https://cloud.google.com
 For the last one year, I have been part of a great learning curve wherein I have upskilled myself to move into a Machine Learning and Cloud Computing. This project was practice project for all the learnings I have had. This is first of the many more to come. 
  
 
-## Libraries/framework used
+## Database used
 
 <b>Built with</b>
-- [Keras](https://keras.io/)
-- [TensorFlow](https://www.tensorflow.org/)
-- [scikit-learn](https://scikit-learn.org/stable/)
+- [Bigquery](https://cloud.google.com/bigquery-ml/docs/bigqueryml-intro)
 
 
 ## Code Example
 
-```sql
-    SELECT *
-    FROM SOMETHING
+```bash
     # clone this repo, removing the '-' to allow python imports:
-    git clone https://github.com/adityasolanki205/Face-Recognition.git
+    git clone https://github.com/adityasolanki205/Machine-Learning-On-Google-Bigquery.git
 ```
 
 ## Installation
 
 Below are the steps to setup the enviroment and run the codes:
 
-1. **Data Setup**: First the data setup has to be done. Download the [5 celebrity Dataset, Kaggle](https://www.kaggle.com/dansbecker/5-celebrity-faces-dataset). After the Download create one more sub folder in train and test folders for your own photos. Provide as diverse photos as you can find. 
+1. **Data Exploration**: First the data exploration has to be done. Download the dataset from [Titanic dataset](https://www.kaggle.com/c/titanic). Steps to upload the data are given below.
+    
+    a. Create a Google Cloud Bucket.
+    b. Upload the Train and test CSV files in that Bucket
+    c.
 
-2. **Face Detection**: Now we need to detect a face in the dataset. To do that we will use [Multi-Task Cascaded Convolutional Neural Network](https://arxiv.org/abs/1604.02878) (MTCNN). This process will provide the co-ordinates of pixels to identify the face in the photo. Same process can be done to fetch more than one face from a photo with multiple people. 
+2. **Data Wrangling**: Now we need to detect a face in the dataset. To do that we will use [Multi-Task Cascaded Convolutional Neural Network](https://arxiv.org/abs/1604.02878) (MTCNN). This process will provide the co-ordinates of pixels to identify the face in the photo. Same process can be done to fetch more than one face from a photo with multiple people. 
 
 ```python
     # All the codes are written in Jupyter Notebooks
@@ -54,7 +54,7 @@ Below are the steps to setup the enviroment and run the codes:
     faces = MTCNN.detect_faces(image)
 ```
 
-3. **Face Embeddings**: After face extraction we will fetch the face embedding using [FaceNet](https://github.com/davidsandberg/facenet). Downloaded the model [here](https://drive.google.com/drive/folders/1pwQ3H4aJ8a6yyJHZkTwtjcL4wYWQb7bn). After running this code for all the faces in train and test folders, we can save the embeddings using [np.saves_compressed](https://numpy.org/doc/stable/reference/generated/numpy.savez_compressed.html)
+3. **Model Creation**: After face extraction we will fetch the face embedding using [FaceNet](https://github.com/davidsandberg/facenet). Downloaded the model [here](https://drive.google.com/drive/folders/1pwQ3H4aJ8a6yyJHZkTwtjcL4wYWQb7bn). After running this code for all the faces in train and test folders, we can save the embeddings using [np.saves_compressed](https://numpy.org/doc/stable/reference/generated/numpy.savez_compressed.html)
 
 ```python
     # The Dimension of the input has to be increased as the model expects input in the form (Sample size, 160, 160,3)
@@ -64,14 +64,14 @@ Below are the steps to setup the enviroment and run the codes:
     embeddings = model.predict(samples)
 ```
 
-4. **Training the SVM model on these Embeddings**:  Now we will train SVM model over the embeddings to predict the face of a person.
+4. **Model Evaluation**:  Now we will train SVM model over the embeddings to predict the face of a person.
 
 ```python
     # We will use Linear SVM model to train over the embeddings
     model = SVC(kernel = 'linear', probability=True).fit(X_train,y_train)
 ```
 
-5. **Predict the Face**: After the training of SVM model we will predict the face over test dataset.
+5. **Model Implementation**: After the training of SVM model we will predict the face over test dataset.
 
 ```python
     # Preprocessing of the test photos have to be done like we did for Train and Validation photos
